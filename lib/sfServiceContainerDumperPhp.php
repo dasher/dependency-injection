@@ -47,6 +47,27 @@ class sfServiceContainerDumperPhp extends sfServiceContainerDumper
     ;
   }
 
+  protected function addServiceWrappedMethods($id, $definition) {
+
+    $code = "";
+    
+    if (method_exists($definition, 'hasWrappedMethods') &&  $definition->hasWrappedMethods()) {
+    foreach($definition->getWrappedMethods() as $method) {
+      $code .= <<<EOF
+
+  protected function _{$method}()
+  {
+  }
+
+EOF;
+
+    }
+    }
+
+    return $code;
+
+  }
+
   protected function addServiceInclude($id, $definition)
   {
     if (null !== $definition->getFile())
@@ -200,6 +221,7 @@ EOF;
     foreach ($this->container->getServiceDefinitions() as $id => $definition)
     {
       $code .= $this->addService($id, $definition);
+      $code .= $this->addServiceWrappedMethods($id, $definition);
     }
 
     foreach ($this->container->getAliases() as $alias => $id)
